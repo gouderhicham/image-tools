@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import imageCompression, { type Options } from 'browser-image-compression';
 
 import type { CompressedResult, ImageDimensions, OutputFormat } from './types/compressor';
 import { formatFileSize } from './utils/formatters';
+import { Navbar } from './components/Navbar';
+import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import { DropZone } from './components/DropZone';
 import { SelectedFileCard } from './components/SelectedFileCard';
@@ -36,7 +38,7 @@ export function App() {
     };
   }, [originalUrl, compressedResult?.url]);
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
       setErrorMessage('Please select a valid image file (JPEG, PNG, WebP, GIF, etc.)');
       return;
@@ -67,7 +69,28 @@ export function App() {
       setImageDimensions({ width: img.width, height: img.height });
     };
     img.src = url;
-  };
+  }, [originalUrl]);
+
+  // Global clipboard paste listener (Ctrl+V / Cmd+V)
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          const file = items[i].getAsFile();
+          if (file) {
+            handleFileSelect(file);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [handleFileSelect]);
 
   const handleCompress = async () => {
     if (!selectedFile) return;
@@ -87,11 +110,8 @@ export function App() {
         maxSizeMB: targetSizeKBNum / 1024,
         useWebWorker: true,
         fileType: outputFormat,
-        // Always keep original width & height
         alwaysKeepResolution: true,
-        // Start from near-max quality (0.95) and binary-search down only as needed
         initialQuality: 0.95,
-        // More iterations = finer quality steps = less over-compression
         maxIteration: 20,
       };
 
@@ -137,91 +157,68 @@ export function App() {
   };
 
   return (
-    <div className="container">
-      <Header activeTab={activeTab} />
+    <div className="app-shell">
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        hasFile={!!selectedFile}
+        onReset={handleReset}
+      />
 
-      {/* Tab Switcher */}
-      <div className="tab-bar">
-        <button
-          type="button"
-          className={`tab-button ${activeTab === 'compress' ? 'active' : ''}`}
-          onClick={() => setActiveTab('compress')}
-        >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
-          Compress Size
-        </button>
+      <main className="main-content">
+        <Header activeTab={activeTab} />
 
-        <button
-          type="button"
-          className={`tab-button ${activeTab === 'crop' ? 'active' : ''}`}
-          onClick={() => setActiveTab('crop')}
-        >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          Crop Image
-        </button>
-
-        <button
-          type="button"
-          className={`tab-button ${activeTab === 'remove-bg' ? 'active' : ''}`}
-          onClick={() => setActiveTab('remove-bg')}
-        >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-          </svg>
-          Remove BG
-        </button>
-      </div>
-
-      {!selectedFile ? (
-        <DropZone onFileSelect={handleFileSelect} />
-      ) : (
-        <div>
-          <SelectedFileCard
-            fileName={selectedFile.name}
-            fileSizeKB={originalSizeKB}
-            imageUrl={originalUrl}
-            dimensions={imageDimensions}
-            onReset={handleReset}
-          />
-
-          {activeTab === 'compress' && (
-            <>
-              <CompressionControls
-                targetKB={targetKB}
-                setTargetKB={setTargetKB}
-                outputFormat={outputFormat}
-                setOutputFormat={setOutputFormat}
-                isCompressing={isCompressing}
-                onCompress={handleCompress}
-                errorMessage={errorMessage}
-                warningMessage={warningMessage}
+        <div className="editor-card">
+          {!selectedFile ? (
+            <DropZone onFileSelect={handleFileSelect} />
+          ) : (
+            <div>
+              <SelectedFileCard
+                fileName={selectedFile.name}
+                fileSizeKB={originalSizeKB}
+                imageUrl={originalUrl}
+                dimensions={imageDimensions}
+                onReset={handleReset}
               />
 
-              {compressedResult && (
-                <CompressionResults
-                  originalSizeKB={originalSizeKB}
-                  originalUrl={originalUrl}
-                  compressedResult={compressedResult}
-                  selectedFileName={selectedFile.name}
-                  outputFormat={outputFormat}
-                />
+              {activeTab === 'compress' && (
+                <>
+                  <CompressionControls
+                    targetKB={targetKB}
+                    setTargetKB={setTargetKB}
+                    outputFormat={outputFormat}
+                    setOutputFormat={setOutputFormat}
+                    isCompressing={isCompressing}
+                    onCompress={handleCompress}
+                    errorMessage={errorMessage}
+                    warningMessage={warningMessage}
+                  />
+
+                  {compressedResult && (
+                    <CompressionResults
+                      originalSizeKB={originalSizeKB}
+                      originalUrl={originalUrl}
+                      compressedResult={compressedResult}
+                      selectedFileName={selectedFile.name}
+                      outputFormat={outputFormat}
+                    />
+                  )}
+                </>
               )}
-            </>
-          )}
 
-          {activeTab === 'crop' && (
-            <ImageCropper imageUrl={originalUrl} originalFileName={selectedFile.name} />
-          )}
+              {activeTab === 'crop' && (
+                <ImageCropper imageUrl={originalUrl} originalFileName={selectedFile.name} />
+              )}
 
-          {activeTab === 'remove-bg' && (
-            <BackgroundRemover imageUrl={originalUrl} originalFileName={selectedFile.name} />
+              {activeTab === 'remove-bg' && (
+                <BackgroundRemover imageUrl={originalUrl} originalFileName={selectedFile.name} />
+              )}
+            </div>
           )}
         </div>
-      )}
+      </main>
+
+      <Footer />
     </div>
   );
 }

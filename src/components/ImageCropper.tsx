@@ -93,7 +93,6 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
     }
   }, [isIndependentCorners, radiusUnit, unifiedRadius, topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius]);
 
-  // CSS border radius string for the preview crop selection box
   const getCssBorderRadius = () => {
     const displayedWidth = completedCrop?.width || 200;
     const displayedHeight = completedCrop?.height || 200;
@@ -159,14 +158,12 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    // Calculate radii scaled to natural image resolution
     const effectiveRadii = getEffectiveRadiusValues(completedCrop.width, completedCrop.height);
     const scaledTL = effectiveRadii.isPercent ? (effectiveRadii.percent / 100) * Math.min(targetWidth, targetHeight) : effectiveRadii.tl * scaleX;
     const scaledTR = effectiveRadii.isPercent ? (effectiveRadii.percent / 100) * Math.min(targetWidth, targetHeight) : effectiveRadii.tr * scaleX;
     const scaledBR = effectiveRadii.isPercent ? (effectiveRadii.percent / 100) * Math.min(targetWidth, targetHeight) : effectiveRadii.br * scaleX;
     const scaledBL = effectiveRadii.isPercent ? (effectiveRadii.percent / 100) * Math.min(targetWidth, targetHeight) : effectiveRadii.bl * scaleX;
 
-    // Fill canvas background if non-transparent or JPEG
     const effectiveFill = outputFormat === 'image/jpeg' && bgFill === 'transparent' ? '#ffffff' : bgFill;
     if (effectiveFill !== 'transparent') {
       ctx.fillStyle = effectiveFill === 'custom' ? customBgColor : effectiveFill;
@@ -175,7 +172,6 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
       ctx.clearRect(0, 0, targetWidth, targetHeight);
     }
 
-    // Clip with rounded rect if any radius is set
     const hasRounding = scaledTL > 0 || scaledTR > 0 || scaledBR > 0 || scaledBL > 0;
 
     ctx.save();
@@ -184,7 +180,6 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
       ctx.clip();
     }
 
-    // Draw the cropped sub-image
     ctx.drawImage(
       image,
       completedCrop.x * scaleX,
@@ -214,7 +209,6 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
     );
   }, [completedCrop, getEffectiveRadiusValues, bgFill, customBgColor, outputFormat, croppedUrl]);
 
-  // Clean up object URLs on unmount
   useEffect(() => {
     return () => {
       if (croppedUrl) URL.revokeObjectURL(croppedUrl);
@@ -256,7 +250,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
 
   return (
     <div className="cropper-container">
-      {/* Workspace with live styled border-radius */}
+      {/* Workspace */}
       <div 
         className="crop-workspace" 
         style={{ '--crop-border-radius': getCssBorderRadius() } as React.CSSProperties}
@@ -270,7 +264,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
           <img
             ref={imgRef}
             src={imageUrl}
-            alt="Source for crop"
+            alt="Crop Selection Canvas"
             onLoad={() => {
               setCrop({
                 unit: '%',
@@ -285,38 +279,65 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
       </div>
 
       <div className="cropper-controls">
-        {/* Aspect Ratio Row */}
+        {/* Aspect Ratio Lock */}
         <div className="form-group">
           <label htmlFor={aspectSelectId}>
-            <span className="control-icon">📐</span> Aspect Ratio Lock
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M3 9h18" />
+              <path d="M9 21V9" />
+            </svg>
+            <span>Aspect Ratio</span>
           </label>
           <select id={aspectSelectId} className="form-control" onChange={handleAspectChange}>
-            <option value="free">Free (Custom Size & Shape)</option>
-            <option value="1:1">1 : 1 (Square / Avatar)</option>
-            <option value="4:3">4 : 3 (Standard Photo)</option>
-            <option value="16:9">16 : 9 (Widescreen)</option>
-            <option value="3:2">3 : 2 (Classic 35mm)</option>
-            <option value="9:16">9 : 16 (Story / Reel)</option>
+            <option value="free">Free Form (Custom Size & Position)</option>
+            <option value="1:1">1:1 Square (Avatar / Profile)</option>
+            <option value="4:3">4:3 Standard Photo</option>
+            <option value="16:9">16:9 Landscape / Widescreen</option>
+            <option value="3:2">3:2 Classic Photo</option>
+            <option value="9:16">9:16 Portrait / Story</option>
           </select>
         </div>
 
-        {/* Corner Border Radius Controls */}
+        {/* Corner Radius Controls */}
         <div className="radius-control-card">
           <div className="radius-card-header">
             <div className="radius-card-title">
-              <span className="control-icon">🔲</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="4" />
+              </svg>
               <div>
-                <strong>Corner Border Radius</strong>
-                <span className="radius-subtext">Curvature for cropped corners</span>
+                <span>Corner Curvature</span>
+                <span className="radius-subtext">Adjust border radius for output framing</span>
               </div>
             </div>
+
             <button
               type="button"
               className={`btn-corner-toggle ${isIndependentCorners ? 'active' : ''}`}
               onClick={() => setIsIndependentCorners(!isIndependentCorners)}
               title={isIndependentCorners ? 'Switch to unified corners' : 'Switch to individual corner control'}
             >
-              {isIndependentCorners ? '🔗 Link All Corners' : '🔀 Independent Corners'}
+              {isIndependentCorners ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                  </svg>
+                  <span>Linked Corners</span>
+                </>
+              ) : (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2" />
+                    <path d="M7 7h.01" />
+                    <path d="M17 7h.01" />
+                    <path d="M7 17h.01" />
+                    <path d="M17 17h.01" />
+                  </svg>
+                  <span>Individual Corners</span>
+                </>
+              )}
             </button>
           </div>
 
@@ -343,21 +364,21 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
                 className={`btn-preset ${unifiedRadius === 24 && radiusUnit === 'px' ? 'active' : ''}`} 
                 onClick={() => applyPreset('rounded')}
               >
-                Rounded (24px)
+                Medium (24px)
               </button>
               <button 
                 type="button" 
                 className={`btn-preset ${unifiedRadius === 48 && radiusUnit === 'px' ? 'active' : ''}`} 
                 onClick={() => applyPreset('smooth')}
               >
-                Smooth (48px)
+                Large (48px)
               </button>
               <button 
                 type="button" 
                 className={`btn-preset ${unifiedRadius === 50 && radiusUnit === '%' ? 'active' : ''}`} 
                 onClick={() => applyPreset('circle')}
               >
-                Circle / Pill (50%)
+                Circle (50%)
               </button>
             </div>
           )}
@@ -366,7 +387,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
           {!isIndependentCorners ? (
             <div className="radius-slider-group">
               <div className="slider-header">
-                <label htmlFor={radiusSliderId}>Radius Size</label>
+                <label htmlFor={radiusSliderId}>Radius Value</label>
                 <div className="radius-unit-toggle">
                   <button
                     type="button"
@@ -420,7 +441,12 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
             <div className="independent-corners-grid">
               <div className="corner-control-box">
                 <label htmlFor={tlSliderId} className="corner-label">
-                  <span>↖ Top Left</span>
+                  <div className="corner-label-title">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="7 17 7 7 17 7" />
+                    </svg>
+                    <span>Top Left</span>
+                  </div>
                   <span className="corner-val">{topLeftRadius}px</span>
                 </label>
                 <input
@@ -436,7 +462,12 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
 
               <div className="corner-control-box">
                 <label htmlFor={trSliderId} className="corner-label">
-                  <span>↗ Top Right</span>
+                  <div className="corner-label-title">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="7 7 17 7 17 17" />
+                    </svg>
+                    <span>Top Right</span>
+                  </div>
                   <span className="corner-val">{topRightRadius}px</span>
                 </label>
                 <input
@@ -452,7 +483,12 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
 
               <div className="corner-control-box">
                 <label htmlFor={blSliderId} className="corner-label">
-                  <span>↙ Bottom Left</span>
+                  <div className="corner-label-title">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="7 7 7 17 17 17" />
+                    </svg>
+                    <span>Bottom Left</span>
+                  </div>
                   <span className="corner-val">{bottomLeftRadius}px</span>
                 </label>
                 <input
@@ -468,7 +504,12 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
 
               <div className="corner-control-box">
                 <label htmlFor={brSliderId} className="corner-label">
-                  <span>↘ Bottom Right</span>
+                  <div className="corner-label-title">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="17 7 17 17 7 17" />
+                    </svg>
+                    <span>Bottom Right</span>
+                  </div>
                   <span className="corner-val">{bottomRightRadius}px</span>
                 </label>
                 <input
@@ -489,7 +530,14 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
         <div className="options-grid" style={{ marginTop: 0 }}>
           <div className="form-group">
             <label>
-              <span className="control-icon">🎨</span> Corner Background Fill
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="m4.93 4.93 4.24 4.24" />
+                <path d="m14.83 9.17 4.24-4.24" />
+                <path d="m14.83 14.83 4.24 4.24" />
+                <path d="m9.17 14.83-4.24 4.24" />
+              </svg>
+              <span>Corner Fill Color</span>
             </label>
             <div className="bg-fill-options">
               <button
@@ -498,25 +546,28 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
                 onClick={() => setBgFill('transparent')}
                 title="Transparent alpha channel (ideal for PNG/WebP)"
               >
-                <span className="checker-dot"></span> Transparent
+                <span className="checker-dot" />
+                <span>Transparent</span>
               </button>
               <button
                 type="button"
                 className={`bg-chip ${bgFill === '#ffffff' ? 'active' : ''}`}
                 onClick={() => setBgFill('#ffffff')}
               >
-                <span className="color-dot" style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1' }}></span> White
+                <span className="color-dot" style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1' }} />
+                <span>White</span>
               </button>
               <button
                 type="button"
                 className={`bg-chip ${bgFill === '#000000' ? 'active' : ''}`}
                 onClick={() => setBgFill('#000000')}
               >
-                <span className="color-dot" style={{ backgroundColor: '#000000' }}></span> Black
+                <span className="color-dot" style={{ backgroundColor: '#000000' }} />
+                <span>Black</span>
               </button>
               <label htmlFor={customColorId} className={`bg-chip ${bgFill === 'custom' ? 'active' : ''}`} style={{ cursor: 'pointer' }}>
-                <span className="color-dot" style={{ backgroundColor: customBgColor, border: '1px solid #cbd5e1' }}></span>
-                Custom
+                <span className="color-dot" style={{ backgroundColor: customBgColor, border: '1px solid #cbd5e1' }} />
+                <span>Custom</span>
                 <input
                   id={customColorId}
                   type="color"
@@ -533,7 +584,11 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
 
           <div className="form-group">
             <label htmlFor={formatSelectId}>
-              <span className="control-icon">💾</span> Output Format
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <span>Export Format</span>
             </label>
             <select
               id={formatSelectId}
@@ -543,7 +598,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
             >
               <option value="image/png">PNG (Preserves Transparency)</option>
               <option value="image/webp">WebP (Compressed with Alpha)</option>
-              <option value="image/jpeg">JPEG (Solid corners only)</option>
+              <option value="image/jpeg">JPEG (Solid Corner Fill)</option>
             </select>
           </div>
         </div>
@@ -551,16 +606,16 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
         {/* Warning if JPEG selected with transparent background */}
         {outputFormat === 'image/jpeg' && bgFill === 'transparent' && (
           <div className="alert alert-warning" style={{ margin: '0' }}>
-            JPEG does not support transparency. Outer rounded corners will be filled with white background automatically. Choose <strong>PNG</strong> or <strong>WebP</strong> for transparent corners.
+            JPEG does not support transparency. Corner cutouts will be filled with white background automatically. Choose <strong>PNG</strong> or <strong>WebP</strong> for transparent corners.
           </div>
         )}
 
         {/* Apply Action Button */}
         <button type="button" className="btn-primary" onClick={generateCrop}>
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
           </svg>
-          Apply Crop & Corner Radius
+          <span>Apply Crop & Curvature</span>
         </button>
 
         {/* Results & Download Section */}
@@ -572,30 +627,27 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageUrl, originalFi
                 download={getCroppedFileName()}
                 className="btn-download"
               >
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                Download Cropped Image
+                <span>Download Cropped Image</span>
               </a>
 
               {croppedBlobSize && croppedDimensions && (
                 <div className="crop-meta-info">
-                  <span>Resolution: <strong>{croppedDimensions.width} × {croppedDimensions.height} px</strong></span>
+                  <span>{croppedDimensions.width} × {croppedDimensions.height} px</span>
                   <span>•</span>
-                  <span>Size: <strong>{croppedBlobSize.toFixed(1)} KB</strong></span>
+                  <span>{croppedBlobSize.toFixed(1)} KB</span>
                   <span>•</span>
-                  <span>Format: <strong>{outputFormat.replace('image/', '').toUpperCase()}</strong></span>
+                  <span>{outputFormat.replace('image/', '').toUpperCase()}</span>
                 </div>
               )}
             </div>
 
             <div className="preview-comparison">
-              <div className="preview-title">Cropped Result Preview</div>
+              <div className="preview-title">Output Preview</div>
               <div className="preview-box-rounded">
                 <img src={croppedUrl} alt="Cropped Preview" />
               </div>

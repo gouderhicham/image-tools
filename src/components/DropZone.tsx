@@ -39,16 +39,24 @@ export const DropZone: React.FC<DropZoneProps> = ({ onFileSelect }) => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <svg className="dropzone-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.5}
-          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-        />
-      </svg>
-      <div className="dropzone-title">Click to upload or drag & drop</div>
-      <div className="dropzone-sub">Supports PNG, JPEG, WebP, GIF (up to 50MB)</div>
+      <div className="dropzone-icon-box">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+      </div>
+
+      <div className="dropzone-title">Click to upload or drag & drop image</div>
+      <div className="dropzone-sub">Supports PNG, JPEG, WebP, GIF, SVG (up to 50MB)</div>
+
+      <div className="dropzone-paste-badge">
+        <span>Paste from clipboard</span>
+        <kbd>Ctrl</kbd>
+        <span>+</span>
+        <kbd>V</kbd>
+      </div>
+
       <input
         ref={fileInputRef}
         type="file"

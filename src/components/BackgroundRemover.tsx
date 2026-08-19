@@ -15,7 +15,7 @@ type ToolMode = 'wand' | 'pen' | 'erase' | 'restore';
 export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, originalFileName }) => {
   const brushSliderId = useId();
 
-  // AI Auto-remove state
+  // Automatic segmentation state
   const [isAiProcessing, setIsAiProcessing] = useState<boolean>(false);
   const [progressPercent, setProgressPercent] = useState<number>(0);
   const [progressLabel, setProgressLabel] = useState<string>('');
@@ -44,7 +44,6 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
   const lastPosRef = useRef<{ x: number; y: number } | null>(null);
   const penPathRef = useRef<Array<{ x: number; y: number }>>([]);
 
-  // Draw base canvas mask
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     const origData = originalImageDataRef.current;
@@ -69,7 +68,6 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
     ctx.putImageData(outputData, 0, 0);
   }, []);
 
-  // Initialize canvas & mask on image load
   useEffect(() => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -91,7 +89,7 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
       originalImageDataRef.current = imgData;
 
       const initialMask = new Uint8Array(img.width * img.height);
-      initialMask.fill(255); // fully opaque
+      initialMask.fill(255);
 
       maskRef.current = new Uint8Array(initialMask);
       setHistory([initialMask]);
@@ -102,7 +100,6 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
     img.src = imageUrl;
   }, [imageUrl]);
 
-  // Keep maskRef in sync when user performs Undo / Redo
   useEffect(() => {
     if (historyIndex >= 0 && history[historyIndex]) {
       maskRef.current = new Uint8Array(history[historyIndex]);
@@ -120,12 +117,11 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
     setHistoryIndex(newHistory.length - 1);
   };
 
-  // Automated 1-Click AI Background Removal
-  const handleAiAutoRemove = async () => {
+  const handleAutoSegmentation = async () => {
     setIsAiProcessing(true);
     setAiError(null);
     setProgressPercent(0);
-    setProgressLabel('Initializing neural segmentation engine...');
+    setProgressLabel('Initializing segmentation model...');
 
     try {
       const resultBlob = await removeBackground(imageUrl, {
@@ -138,10 +134,10 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
           if (total > 0) {
             const pct = Math.min(100, Math.max(0, Math.round((current / total) * 100)));
             setProgressPercent(pct);
-            const assetName = key.split('/').pop() || 'neural assets';
-            setProgressLabel(`Downloading ${assetName}: ${pct}%`);
+            const assetName = key.split('/').pop() || 'model weights';
+            setProgressLabel(`Loading ${assetName}: ${pct}%`);
           } else {
-            setProgressLabel('Analyzing and segmenting foreground object...');
+            setProgressLabel('Segmenting foreground subject...');
           }
         },
       });
@@ -173,7 +169,6 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
         const aiData = tempCtx.getImageData(0, 0, origData.width, origData.height);
         const aiPixels = aiData.data;
 
-        // Extract alpha channel mask
         const newMask = new Uint8Array(origData.width * origData.height);
         for (let i = 0; i < newMask.length; i++) {
           newMask[i] = aiPixels[i * 4 + 3];
@@ -189,22 +184,21 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
       img.onerror = () => {
         URL.revokeObjectURL(resultUrl);
         setIsAiProcessing(false);
-        setAiError('Failed to decode AI output image. Please try again.');
+        setAiError('Failed to decode segmentation output.');
       };
 
       img.src = resultUrl;
     } catch (err: unknown) {
-      console.error('AI background removal error:', err);
+      console.error('Segmentation error:', err);
       setIsAiProcessing(false);
       setAiError(
         err instanceof Error
           ? err.message
-          : 'AI background removal encountered an issue. Please try again or use the manual tools below.'
+          : 'Background segmentation encountered an issue. Please try again or use the manual tools below.'
       );
     }
   };
 
-  // Convert mouse coordinates to canvas pixel space
   const getCanvasCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0, scale: 1 };
@@ -219,7 +213,6 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
     };
   };
 
-  // Paint circle into mask for Eraser / Restore
   const paintCircle = (cx: number, cy: number, radius: number, targetAlpha: number) => {
     const canvas = canvasRef.current;
     const mask = maskRef.current;
@@ -258,7 +251,6 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
     }
   };
 
-  // Render brush cursor & Pen Lasso preview overlay
   const drawOverlay = (mouseX?: number, mouseY?: number, scale: number = 1) => {
     const overlay = overlayCanvasRef.current;
     if (!overlay) return;
@@ -268,7 +260,6 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
 
     ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-    // Render Pen Lasso red preview highlight if active
     if (isLassoPreviewActive && lassoSelection) {
       const previewImgData = ctx.createImageData(overlay.width, overlay.height);
       const px = previewImgData.data;
@@ -276,17 +267,16 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
       for (let i = 0; i < lassoSelection.length; i++) {
         if (lassoSelection[i] > 0) {
           const idx = i * 4;
-          px[idx] = 239;     // R
-          px[idx + 1] = 68;  // G
-          px[idx + 2] = 68;  // B
-          px[idx + 3] = 160; // Alpha
+          px[idx] = 239;
+          px[idx + 1] = 68;
+          px[idx + 2] = 68;
+          px[idx + 3] = 160;
         }
       }
 
       ctx.putImageData(previewImgData, 0, 0);
     }
 
-    // Render active drawing Pen Path line
     if (activeTool === 'pen' && penPathRef.current.length > 0) {
       ctx.save();
       ctx.beginPath();
@@ -303,7 +293,6 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
       ctx.restore();
     }
 
-    // Render visible brush / cursor outline
     if (mouseX !== undefined && mouseY !== undefined) {
       const radius = Math.max(2, (brushSize * scale) / 2);
 
@@ -325,7 +314,7 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
         ctx.stroke();
       } else if (activeTool === 'restore') {
         ctx.arc(mouseX, mouseY, radius, 0, 2 * Math.PI);
-        ctx.strokeStyle = '#22c55e';
+        ctx.strokeStyle = '#16a34a';
         ctx.lineWidth = Math.max(2, scale * 1.5);
         ctx.stroke();
       } else if (activeTool === 'pen') {
@@ -337,7 +326,7 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
         ctx.stroke();
       } else if (activeTool === 'wand') {
         const arm = Math.max(8, scale * 6);
-        ctx.strokeStyle = '#3b82f6';
+        ctx.strokeStyle = '#2563eb';
         ctx.lineWidth = Math.max(2, scale);
         ctx.beginPath();
         ctx.moveTo(mouseX - arm, mouseY);
@@ -521,65 +510,70 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
 
   return (
     <div className="bg-remover-container">
-      {/* 1-Click AI Auto Background Removal Hero Banner */}
-      <div className="ai-hero-card">
-        <div className="ai-hero-header">
-          <div className="ai-hero-badge">
-            <span className="sparkle-icon">✨</span>
-            <span>AI Neural Auto-Remove</span>
+      {/* Automatic Segmentation Section */}
+      <div className="auto-segmentation-card">
+        <div className="auto-segmentation-header">
+          <div className="auto-segmentation-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            <span>Automatic Segmentation</span>
           </div>
-          <span className="ai-tag">High Accuracy (ISNet)</span>
+          <span className="auto-segmentation-tag">Client-Side AI</span>
         </div>
 
-        <p className="ai-hero-desc">
-          Automatically detect and cutout subjects, portraits, products, and objects with sub-pixel edge precision without manual editing.
+        <p className="auto-segmentation-desc">
+          Automatically extract subjects, portraits, products, and complex objects with sub-pixel edge masking.
         </p>
 
         {isAiProcessing ? (
-          <div className="ai-progress-card">
-            <div className="ai-progress-header">
-              <div className="ai-spinner-row">
-                <div className="spinner ai-spin" />
-                <span className="ai-progress-title">{progressLabel || 'Processing image...'}</span>
+          <div className="segmentation-progress-card">
+            <div className="progress-header-row">
+              <div className="progress-title-with-spinner">
+                <div className="spinner" />
+                <span className="progress-title-text">{progressLabel || 'Processing image...'}</span>
               </div>
-              <span className="ai-progress-pct">{progressPercent}%</span>
+              <span className="progress-pct-badge">{progressPercent}%</span>
             </div>
-            <div className="ai-progress-bar-bg">
-              <div className="ai-progress-bar-fill" style={{ width: `${Math.max(5, progressPercent)}%` }} />
+            <div className="progress-bar-track">
+              <div className="progress-bar-indicator" style={{ width: `${Math.max(5, progressPercent)}%` }} />
             </div>
-            <span className="ai-progress-hint">Runs 100% privately in your browser using WebGPU/WebAssembly</span>
+            <span className="progress-footnote">Processing locally via WebAssembly / WebGPU</span>
           </div>
         ) : (
-          <div className="ai-action-row">
-            <button
-              type="button"
-              className="btn-ai-hero"
-              onClick={handleAiAutoRemove}
-            >
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              {aiCompleted ? '⚡ Re-run 1-Click AI Auto Remove' : '⚡ 1-Click AI Auto Remove Background'}
-            </button>
-          </div>
+          <button
+            type="button"
+            className="btn-auto-segment"
+            onClick={handleAutoSegmentation}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+              <path d="M2 12h20" />
+            </svg>
+            <span>{aiCompleted ? 'Re-run Automatic Segmentation' : 'Run Automatic Background Removal'}</span>
+          </button>
         )}
 
         {aiCompleted && !isAiProcessing && (
-          <div className="ai-success-banner">
-            <span>🎉 <strong>AI Cutout Applied!</strong> You can download now or use the fine-tuning tools below if you want any custom touch-ups.</span>
+          <div className="segmentation-success-notice">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>Segmentation applied. You can download directly or use the refinement tools below.</span>
           </div>
         )}
 
         {aiError && !isAiProcessing && (
-          <div className="alert alert-danger" style={{ marginTop: '10px' }}>
+          <div className="alert alert-danger" style={{ marginTop: '4px' }}>
             {aiError}
           </div>
         )}
       </div>
 
-      {/* Manual Refinement Section Header */}
+      {/* Manual Refinement Tools Divider */}
       <div className="section-divider">
-        <span>Optional Manual Fine-Tuning Tools</span>
+        <span>Surgical Refinement Tools</span>
       </div>
 
       {/* Tool Selection Bar */}
@@ -591,12 +585,14 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
             setActiveTool('wand');
             setIsLassoPreviewActive(false);
           }}
-          title="Magic Wand: Click any background area to remove matching color precisely"
+          title="Magic Wand: Click any color region to remove connected pixels"
         >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z" />
+            <path d="m5 2 5 5" />
+            <path d="M2 5l5 5" />
           </svg>
-          Magic Wand
+          <span>Magic Wand</span>
         </button>
 
         <button
@@ -606,12 +602,15 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
             setActiveTool('pen');
             setIsLassoPreviewActive(false);
           }}
-          title="Pen Lasso Clip: Draw a line around/over any object to clip and delete it"
+          title="Pen Lasso: Encircle any area to clip and delete"
         >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 19l7-7 3 3-7 7-3-3z" />
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+            <path d="M2 2l7.586 7.586" />
+            <circle cx="11" cy="11" r="2" />
           </svg>
-          Pen Lasso Clip
+          <span>Pen Lasso</span>
         </button>
 
         <button
@@ -621,12 +620,14 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
             setActiveTool('erase');
             setIsLassoPreviewActive(false);
           }}
-          title="Eraser Brush: Paint directly over pixels to erase them"
+          title="Eraser Brush: Paint to remove pixels manually"
         >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
+            <path d="M22 21H7" />
+            <path d="m5 11 9 9" />
           </svg>
-          Eraser Brush
+          <span>Eraser</span>
         </button>
 
         <button
@@ -636,19 +637,22 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
             setActiveTool('restore');
             setIsLassoPreviewActive(false);
           }}
-          title="Restore Brush: Paint back pixels that were erased"
+          title="Restore Brush: Paint back removed pixels"
         >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+            <path d="M16 16h5v5" />
           </svg>
-          Restore Brush
+          <span>Restore</span>
         </button>
       </div>
 
-      {/* Brush Size Slider (Only active for Eraser or Restore) */}
+      {/* Brush Size Slider */}
       {(activeTool === 'erase' || activeTool === 'restore') && (
-        <div className="form-group" style={{ marginTop: '4px' }}>
-          <label htmlFor={brushSliderId}>Brush Size: {brushSize}px</label>
+        <div className="form-group" style={{ marginTop: '2px' }}>
+          <label htmlFor={brushSliderId}>Brush Diameter: {brushSize}px</label>
           <input
             id={brushSliderId}
             type="range"
@@ -661,32 +665,32 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
         </div>
       )}
 
-      {/* Pen Lasso Delete Confirmation Action Banner */}
+      {/* Pen Lasso Delete Confirmation */}
       {isLassoPreviewActive && (
-        <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
-          <span><strong>Object Auto-Detected!</strong> Red highlight shows detected object. Confirm deletion?</span>
-          <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="alert alert-warning" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
+          <span>Area selected. Confirm deletion of enclosed region?</span>
+          <div style={{ display: 'flex', gap: '6px' }}>
             <button
               type="button"
               className="btn-download"
-              style={{ backgroundColor: '#dc2626', padding: '6px 12px', fontSize: '0.85rem' }}
+              style={{ backgroundColor: '#dc2626', padding: '5px 10px', fontSize: '0.8rem' }}
               onClick={handleConfirmLassoDelete}
             >
-              ✓ Delete Object
+              Delete Selection
             </button>
             <button
               type="button"
               className="btn-secondary"
-              style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+              style={{ padding: '5px 10px', fontSize: '0.8rem' }}
               onClick={handleCancelLassoDelete}
             >
-              ✗ Cancel
+              Cancel
             </button>
           </div>
         </div>
       )}
 
-      {/* Canvas Workspace with Stacked Dual Canvases */}
+      {/* Canvas Workspace */}
       <div className="bg-canvas-workspace">
         <canvas ref={canvasRef} />
         <canvas
@@ -699,7 +703,7 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
         />
       </div>
 
-      {/* Action Bar */}
+      {/* Action Toolbar */}
       <div className="action-row">
         <div className="btn-group">
           <button
@@ -707,9 +711,13 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
             className="btn-secondary"
             onClick={handleUndo}
             disabled={historyIndex <= 0}
-            title="Undo last change"
+            title="Undo"
           >
-            ↩ Undo
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            <span>Undo</span>
           </button>
           <button
             type="button"
@@ -718,32 +726,33 @@ export const BackgroundRemover: React.FC<BackgroundRemoverProps> = ({ imageUrl, 
             disabled={historyIndex >= history.length - 1}
             title="Redo"
           >
-            ↪ Redo
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+            <span>Redo</span>
           </button>
-          <button type="button" className="btn-secondary" onClick={() => handleTrimHalo(1)} title="Contract edges by 1 pixel to remove stray color fringing">
-            ✨ Trim Halo (1px)
+          <button type="button" className="btn-secondary" onClick={() => handleTrimHalo(1)} title="Contract edges by 1px to remove boundary fringing">
+            <span>Contract Edge (1px)</span>
           </button>
-          <button type="button" className="btn-secondary" onClick={() => handleTrimHalo(2)} title="Contract edges by 2 pixels">
-            ✨ Trim Halo (2px)
+          <button type="button" className="btn-secondary" onClick={() => handleTrimHalo(2)} title="Contract edges by 2px">
+            <span>Contract Edge (2px)</span>
           </button>
-          <button type="button" className="btn-secondary" onClick={handleSmoothEdges} title="Feather and anti-alias cut edges">
-            🌿 Smooth Edges
+          <button type="button" className="btn-secondary" onClick={handleSmoothEdges} title="Feather and smooth alpha edges">
+            <span>Feather Edges</span>
           </button>
-          <button type="button" className="btn-secondary" onClick={handleReset} title="Reset to original image">
-            ↺ Reset
+          <button type="button" className="btn-secondary" onClick={handleReset} title="Reset mask to original image">
+            <span>Reset All</span>
           </button>
         </div>
 
         <button type="button" className="btn-download" onClick={handleDownload}>
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          Download Cutout (Transparent PNG)
+          <span>Download Transparent Cutout (PNG)</span>
         </button>
       </div>
     </div>

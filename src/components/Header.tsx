@@ -5,32 +5,36 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ activeTab }) => {
-  const getTitle = () => {
+  const getInfo = () => {
     switch (activeTab) {
       case 'compress':
-        return 'Image Compressor';
+        return {
+          title: 'Image Compressor',
+          description: 'Reduce file weight to your exact target size without visible degradation.',
+        };
       case 'crop':
-        return 'Image Cropper';
+        return {
+          title: 'Image Cropper & Framing',
+          description: 'Aspect ratio cropping with real-time corner border radius and curvature control.',
+        };
       case 'remove-bg':
-        return 'Background Remover';
+        return {
+          title: 'Background Segmentation',
+          description: 'Automatic salient object extraction with surgical alpha matte refinement.',
+        };
     }
   };
 
-  const getDescription = () => {
-    switch (activeTab) {
-      case 'compress':
-        return 'Compress images to your exact target file size without losing visible quality';
-      case 'crop':
-        return 'Crop and frame your image with a moveable selection box';
-      case 'remove-bg':
-        return 'Calculation-based exact background removal with Magic Wand & surgical brushes';
-    }
-  };
+  const { title, description } = getInfo();
 
   return (
-    <header className="header">
-      <h1>{getTitle()}</h1>
-      <p>{getDescription()}</p>
-    </header>
+    <div className="tool-header">
+      <div className="tool-header-row">
+        <div className="tool-header-title">
+          <h1>{title}</h1>
+          <p>{description}</p>
+        </div>
+      </div>
+    </div>
   );
 };

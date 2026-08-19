@@ -20,19 +20,25 @@ export const SelectedFileCard: React.FC<SelectedFileCardProps> = ({
   return (
     <div className="selected-file-card">
       <div className="file-details">
-        <img src={imageUrl} alt="Thumbnail" className="file-icon-thumb" />
+        <img src={imageUrl} alt="Active Preview" className="file-icon-thumb" />
         <div className="file-info">
           <span className="file-name" title={fileName}>
             {fileName}
           </span>
           <span className="file-meta">
-            {formatFileSize(fileSizeKB)}
-            {dimensions && ` • ${dimensions.width} × ${dimensions.height}px`}
+            <span>{formatFileSize(fileSizeKB)}</span>
+            {dimensions && (
+              <>
+                <span>•</span>
+                <span>{dimensions.width} × {dimensions.height} px</span>
+              </>
+            )}
           </span>
         </div>
       </div>
-      <button type="button" className="btn-change" onClick={onReset}>
-        Change
+
+      <button type="button" className="btn-change" onClick={onReset} title="Replace current image">
+        Replace
       </button>
     </div>
   );
