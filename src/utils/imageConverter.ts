@@ -422,8 +422,9 @@ export async function encodePdf(
   const imgHeight = sourceCanvas.height;
 
   // Convert canvas to high-quality JPEG binary data
+  const jpegQuality = Math.max(0.9, options.quality ?? 1.0);
   const jpegBlob = await new Promise<Blob | null>((res) =>
-    sourceCanvas.toBlob(res, 'image/jpeg', Math.max(0.9, options.quality))
+    sourceCanvas.toBlob(res, 'image/jpeg', jpegQuality)
   );
 
   if (!jpegBlob) {
@@ -684,10 +685,11 @@ export async function convertImage(
       break;
     }
     case 'avif': {
+      const avifQuality = options.quality ?? 1.0;
       // Check if browser natively supports canvas AVIF encoding
       if (isMimeSupported('image/avif')) {
         const blob = await new Promise<Blob | null>((res) =>
-          canvas.toBlob(res, 'image/avif', options.quality)
+          canvas.toBlob(res, 'image/avif', avifQuality)
         );
         if (blob) {
           outputBlob = blob;
@@ -696,7 +698,7 @@ export async function convertImage(
       }
       // Fallback: If AVIF is unsupported in this specific browser engine, export as WebP
       const fallbackBlob = await new Promise<Blob | null>((res) =>
-        canvas.toBlob(res, 'image/webp', options.quality)
+        canvas.toBlob(res, 'image/webp', avifQuality)
       );
       if (!fallbackBlob) {
         throw new Error('Failed to encode AVIF image');
@@ -706,8 +708,9 @@ export async function convertImage(
     }
     case 'jfif':
     case 'jpeg': {
+      const jpegQuality = options.quality ?? 1.0;
       const blob = await new Promise<Blob | null>((res) =>
-        canvas.toBlob(res, 'image/jpeg', options.quality)
+        canvas.toBlob(res, 'image/jpeg', jpegQuality)
       );
       if (!blob) throw new Error('Failed to encode JPEG image');
       outputBlob = blob;
@@ -739,8 +742,9 @@ export async function convertImage(
     }
     case 'webp':
     default: {
+      const webpQuality = options.quality ?? 1.0;
       const blob = await new Promise<Blob | null>((res) =>
-        canvas.toBlob(res, 'image/webp', options.quality)
+        canvas.toBlob(res, 'image/webp', webpQuality)
       );
       if (!blob) throw new Error('Failed to encode WebP image');
       outputBlob = blob;
