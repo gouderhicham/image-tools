@@ -12,9 +12,10 @@ import { CompressionControls } from './components/CompressionControls';
 import { CompressionResults } from './components/CompressionResults';
 import { ImageCropper } from './components/ImageCropper';
 import { BackgroundRemover } from './components/BackgroundRemover';
+import { ImageConverter } from './components/ImageConverter';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<'compress' | 'crop' | 'remove-bg'>('compress');
+  const [activeTab, setActiveTab] = useState<'compress' | 'crop' | 'convert' | 'remove-bg'>('compress');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [originalUrl, setOriginalUrl] = useState<string>('');
   const [originalSizeKB, setOriginalSizeKB] = useState<number>(0);
@@ -39,8 +40,12 @@ export function App() {
   }, [originalUrl, compressedResult?.url]);
 
   const handleFileSelect = useCallback((file: File) => {
-    if (!file.type.startsWith('image/')) {
-      setErrorMessage('Please select a valid image file (JPEG, PNG, WebP, GIF, etc.)');
+    const isImage =
+      file.type.startsWith('image/') ||
+      /\.(svg|avif|jfif|jpg|jpeg|png|webp|gif|bmp|ico|tiff|tif|heic|heif)$/i.test(file.name);
+
+    if (!isImage) {
+      setErrorMessage('Please select a valid image file (SVG, AVIF, JFIF, JPEG, PNG, WebP, BMP, ICO, TIFF, GIF)');
       return;
     }
 
@@ -208,6 +213,15 @@ export function App() {
 
               {activeTab === 'crop' && (
                 <ImageCropper imageUrl={originalUrl} originalFileName={selectedFile.name} />
+              )}
+
+              {activeTab === 'convert' && (
+                <ImageConverter
+                  originalFile={selectedFile}
+                  imageUrl={originalUrl}
+                  originalFileName={selectedFile.name}
+                  originalDimensions={imageDimensions}
+                />
               )}
 
               {activeTab === 'remove-bg' && (

@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface HeaderProps {
-  activeTab: 'compress' | 'crop' | 'remove-bg';
+  activeTab: 'compress' | 'crop' | 'convert' | 'remove-bg';
 }
 
 export const Header: React.FC<HeaderProps> = ({ activeTab }) => {
@@ -16,6 +16,11 @@ export const Header: React.FC<HeaderProps> = ({ activeTab }) => {
         return {
           title: 'Image Cropper & Framing',
           description: 'Aspect ratio cropping with real-time corner border radius and curvature control.',
+        };
+      case 'convert':
+        return {
+          title: 'Universal Image Converter',
+          description: 'Zero-server browser format conversion supporting AVIF, WebP, PNG, JPG, JFIF, SVG, ICO, BMP, TIFF, and PDF.',
         };
       case 'remove-bg':
         return {

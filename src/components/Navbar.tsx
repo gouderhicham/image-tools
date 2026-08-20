@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface NavbarProps {
-  activeTab: 'compress' | 'crop' | 'remove-bg';
-  setActiveTab: (tab: 'compress' | 'crop' | 'remove-bg') => void;
+  activeTab: 'compress' | 'crop' | 'convert' | 'remove-bg';
+  setActiveTab: (tab: 'compress' | 'crop' | 'convert' | 'remove-bg') => void;
   hasFile: boolean;
   onReset: () => void;
 }
@@ -58,6 +58,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               <path d="M18 22V8a2 2 0 0 0-2-2H2" />
             </svg>
             Crop
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'convert'}
+            className={`nav-tool-btn ${activeTab === 'convert' ? 'active' : ''}`}
+            onClick={() => setActiveTab('convert')}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+            </svg>
+            Convert
           </button>
 
           <button

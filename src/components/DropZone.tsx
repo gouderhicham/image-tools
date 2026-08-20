@@ -48,7 +48,7 @@ export const DropZone: React.FC<DropZoneProps> = ({ onFileSelect }) => {
       </div>
 
       <div className="dropzone-title">Click to upload or drag & drop image</div>
-      <div className="dropzone-sub">Supports PNG, JPEG, WebP, GIF, SVG (up to 50MB)</div>
+      <div className="dropzone-sub">Supports SVG, AVIF, JFIF, JPG, PNG, WebP, BMP, ICO, TIFF, GIF (up to 100MB)</div>
 
       <div className="dropzone-paste-badge">
         <span>Paste from clipboard</span>
@@ -60,7 +60,7 @@ export const DropZone: React.FC<DropZoneProps> = ({ onFileSelect }) => {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,.jfif,.avif,.webp,.svg,.ico,.bmp,.tiff,.tif"
         className="file-input"
         onChange={handleInputChange}
       />
