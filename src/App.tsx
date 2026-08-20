@@ -193,7 +193,13 @@ export function App() {
         <Header activeTab={activeTab} />
 
         <div className="editor-card">
-          {!selectedFile ? (
+          {isDecodingHeic ? (
+            <div className="loading-state" style={{ padding: '40px 20px', textAlign: 'center' }}>
+              <span className="spinner" style={{ width: '28px', height: '28px', margin: '0 auto 12px' }} />
+              <p style={{ fontWeight: 600, color: 'var(--text-main)' }}>Decoding Apple HEIC image...</p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Converting to high-fidelity format in browser worker</p>
+            </div>
+          ) : !selectedFile ? (
             <DropZone onFileSelect={handleFileSelect} />
           ) : (
             <div>
