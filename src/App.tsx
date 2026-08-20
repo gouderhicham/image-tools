@@ -13,6 +13,7 @@ import { CompressionResults } from './components/CompressionResults';
 import { ImageCropper } from './components/ImageCropper';
 import { BackgroundRemover } from './components/BackgroundRemover';
 import { ImageConverter } from './components/ImageConverter';
+import { isHeicFile, decodeHeicFile } from './utils/heicDecoder';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'compress' | 'crop' | 'convert' | 'remove-bg'>('compress');
@@ -20,6 +21,7 @@ export function App() {
   const [originalUrl, setOriginalUrl] = useState<string>('');
   const [originalSizeKB, setOriginalSizeKB] = useState<number>(0);
   const [imageDimensions, setImageDimensions] = useState<ImageDimensions | null>(null);
+  const [isDecodingHeic, setIsDecodingHeic] = useState<boolean>(false);
 
   // Compression options
   const [targetKB, setTargetKB] = useState<string>('100');
@@ -39,13 +41,13 @@ export function App() {
     };
   }, [originalUrl, compressedResult?.url]);
 
-  const handleFileSelect = useCallback((file: File) => {
+  const handleFileSelect = useCallback(async (file: File) => {
     const isImage =
       file.type.startsWith('image/') ||
       /\.(svg|avif|jfif|jpg|jpeg|png|webp|gif|bmp|ico|tiff|tif|heic|heif)$/i.test(file.name);
 
     if (!isImage) {
-      setErrorMessage('Please select a valid image file (SVG, AVIF, JFIF, JPEG, PNG, WebP, BMP, ICO, TIFF, GIF)');
+      setErrorMessage('Please select a valid image file (SVG, AVIF, JFIF, JPEG, PNG, WebP, BMP, ICO, TIFF, GIF, HEIC)');
       return;
     }
 
@@ -53,14 +55,31 @@ export function App() {
     setWarningMessage(null);
     setCompressedResult(null);
 
+    let processedFile = file;
+
+    // Handle Apple HEIC/HEIF decoding
+    if (isHeicFile(file)) {
+      setIsDecodingHeic(true);
+      try {
+        processedFile = await decodeHeicFile(file);
+      } catch (err) {
+        console.error('HEIC decoding failed:', err);
+        setErrorMessage('Failed to decode HEIC image. Please try uploading a JPG, PNG, or WebP.');
+        setIsDecodingHeic(false);
+        return;
+      } finally {
+        setIsDecodingHeic(false);
+      }
+    }
+
     if (originalUrl) {
       URL.revokeObjectURL(originalUrl);
     }
 
-    const url = URL.createObjectURL(file);
-    const sizeKB = file.size / 1024;
+    const url = URL.createObjectURL(processedFile);
+    const sizeKB = processedFile.size / 1024;
 
-    setSelectedFile(file);
+    setSelectedFile(processedFile);
     setOriginalUrl(url);
     setOriginalSizeKB(sizeKB);
 

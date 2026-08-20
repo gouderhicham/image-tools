@@ -67,11 +67,10 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border-color);
-  height: 64px;
   transition: all 0.2s ease;
 }
 
@@ -79,7 +78,7 @@ body {
   max-width: 1120px;
   margin: 0 auto;
   padding: 0 24px;
-  height: 100%;
+  min-height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -93,6 +92,7 @@ body {
   text-decoration: none;
   color: var(--text-main);
   user-select: none;
+  flex-shrink: 0;
 }
 
 .brand-icon-box {
@@ -111,6 +111,7 @@ body {
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .brand-tag {
@@ -125,7 +126,13 @@ body {
   letter-spacing: 0.04em;
 }
 
-/* Navigation Tool Switcher (Segmented Control) */
+/* Tool Switcher Wrapper & Segmented Control */
+.nav-tools-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .nav-tools {
   display: flex;
   background: #f1f5f9;
@@ -150,6 +157,7 @@ body {
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-tool-btn:hover {
@@ -167,7 +175,8 @@ body {
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .nav-author-link {
@@ -183,6 +192,7 @@ body {
   border: 1px solid var(--border-color);
   background: #ffffff;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .nav-author-link:hover {
@@ -292,25 +302,47 @@ body {
   margin-bottom: 14px;
 }
 
-.dropzone-paste-badge {
+/* Interactive Dropzone Tap-to-Paste Button */
+.dropzone-paste-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.75rem;
+  gap: 8px;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--text-main);
   background: #ffffff;
   border: 1px solid var(--border-color);
-  padding: 3px 8px;
-  border-radius: var(--radius-xs);
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s ease;
+  user-select: none;
+  font-family: inherit;
 }
 
-.dropzone-paste-badge kbd {
+.dropzone-paste-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent-border);
+  color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+.dropzone-paste-btn .desktop-keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 4px;
+  font-size: 0.725rem;
+  color: var(--text-muted);
+}
+
+.dropzone-paste-btn kbd {
   font-family: inherit;
   font-weight: 600;
   color: var(--text-main);
   background: #f1f5f9;
-  padding: 1px 4px;
+  padding: 1px 5px;
   border-radius: 3px;
   border: 1px solid #e2e8f0;
 }
@@ -1887,14 +1919,80 @@ body {
 }
 
 @media (max-width: 768px) {
+  /* Responsive Navbar Layout */
+  .navbar-inner {
+    padding: 10px 16px 8px;
+    min-height: auto;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    justify-content: space-between;
+  }
+
+  .nav-brand {
+    order: 1;
+  }
+
+  .nav-actions {
+    order: 2;
+    gap: 8px;
+  }
+
+  .nav-author-link .author-name {
+    display: none; /* Keep icon on small screens to prevent crowding */
+  }
+
+  .nav-author-link {
+    padding: 6px 8px;
+  }
+
+  /* Full-width scrollable tool tabs under navbar on mobile */
+  .nav-tools-wrapper {
+    order: 3;
+    width: calc(100% + 32px);
+    margin: 2px -16px 0;
+    padding: 0 16px 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .nav-tools-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-tools {
+    width: max-content;
+    padding: 4px;
+    background: #f1f5f9;
+    border-radius: var(--radius-md);
+    gap: 4px;
+  }
+
+  .nav-tool-btn {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .main-content {
+    padding: 20px 14px 48px;
+  }
+
+  .editor-card {
+    padding: 16px;
+  }
+
   .format-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .converter-category-tabs {
     flex-wrap: wrap;
   }
+
   .result-actions-row {
     flex-direction: column;
   }
 }
+
 
