@@ -119,6 +119,12 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+.brand-text-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .brand-name {
   font-size: 1rem;
   font-weight: 700;
@@ -143,6 +149,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Mobile Bottom Navigation Bar (Hidden by default on Desktop) */
+.mobile-bottom-nav {
+  display: none;
 }
 
 .nav-tools {
@@ -1931,18 +1942,22 @@ body {
 }
 
 @media (max-width: 768px) {
-  /* Responsive Navbar Layout */
+  /* Clean Single-Row Top Navbar (No tool tabs inside top nav) */
+  .navbar {
+    height: 54px;
+  }
+
   .navbar-inner {
-    padding: 10px 12px 8px;
-    min-height: auto;
-    flex-wrap: wrap;
-    gap: 8px 10px;
+    padding: 0 14px;
+    height: 100%;
+    min-height: 54px;
+    flex-wrap: nowrap;
     justify-content: space-between;
+    align-items: center;
   }
 
   .nav-brand {
-    order: 1;
-    gap: 6px;
+    gap: 8px;
   }
 
   .brand-name {
@@ -1955,7 +1970,6 @@ body {
   }
 
   .nav-actions {
-    order: 2;
     gap: 6px;
   }
 
@@ -1975,39 +1989,80 @@ body {
     padding: 6px 8px;
   }
 
-  /* Full-width scrollable tool tabs under navbar on mobile */
-  .nav-tools-wrapper {
-    order: 3;
-    width: 100%;
-    margin: 0;
-    padding: 2px 0 4px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+  /* Hide Desktop Center Tools inside Top Navbar */
+  .desktop-only-tools {
+    display: none !important;
   }
 
-  .nav-tools-wrapper::-webkit-scrollbar {
-    display: none;
+  /* Sleek Fixed Bottom Navigation Dock on Mobile */
+  .mobile-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-color);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 8px));
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+    user-select: none;
   }
 
-  .nav-tools {
-    width: max-content;
-    padding: 3px;
-    background: #f1f5f9;
-    border-radius: var(--radius-md);
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 3px;
+    padding: 5px 2px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .nav-tool-btn {
-    padding: 6px 12px;
-    font-size: 0.775rem;
-    font-weight: 500;
+  .mobile-nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease;
+  }
+
+  .mobile-nav-label {
+    font-size: 0.675rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .mobile-nav-item.active {
+    color: var(--accent-color);
+  }
+
+  .mobile-nav-item.active .mobile-nav-icon {
+    transform: translateY(-1px);
+  }
+
+  .mobile-nav-item.active .mobile-nav-label {
+    color: var(--accent-color);
+    font-weight: 700;
   }
 
   .main-content {
-    padding: 16px 10px 40px;
+    padding: 16px 10px calc(80px + env(safe-area-inset-bottom, 16px));
     max-width: 100vw;
     overflow-x: hidden;
+  }
+
+  .footer {
+    margin-bottom: calc(56px + env(safe-area-inset-bottom, 12px));
   }
 
   .editor-card {
