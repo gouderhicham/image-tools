@@ -1,0 +1,24 @@
+{
+  "name": "Image Crop Studio — Free Image Converter, Compressor & Crop",
+  "short_name": "Image Studio",
+  "description": "Free browser-based image editor for compression, universal format conversion, cropping, and AI background removal with 100% privacy.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "categories": ["utilities", "productivity", "photo", "graphics"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

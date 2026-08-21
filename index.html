@@ -3,14 +3,211 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Image Crop — Image Editor</title>
-    <meta name="description" content="Professional browser-based image editor for compression, precision cropping with corner radius control, and background removal by Gouder Hicham." />
+
+    <!-- Primary Search Engine Optimization (SEO) -->
+    <title>Free Image Converter, Compressor &amp; Crop Online — Image Crop Studio</title>
+    <meta name="title" content="Free Image Converter, Compressor &amp; Crop Online — Image Crop Studio" />
+    <meta
+      name="description"
+      content="Free all-in-one online image editor: Compress images to target KB size, convert between AVIF, WebP, PNG, JPG, JFIF, HEIC, SVG, ICO, BMP, TIFF, and PDF, crop with rounded corners, and remove backgrounds with AI. 100% private client-side processing."
+    />
+    <meta
+      name="keywords"
+      content="image compressor, reduce image size, free image converter, convert png to jpg, convert heic to jpg, webp converter, avif converter, image cropper, rounded corner image, background remover, transparent background, free image editor online, compress image to 100kb, convert image to pdf, favicon generator"
+    />
     <meta name="author" content="Gouder Hicham" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Image Crop Studio" />
     <meta name="google-site-verification" content="6dNrt_W06dP1e8Inq1sY20NQYT0QOCG7P8QNRtgjwVI" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="canonical" href="https://image-crop-studio.vercel.app/" id="canonical-link" />
+
+    <!-- Open Graph / Facebook / LinkedIn / Discord -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Image Crop Studio" />
+    <meta property="og:url" content="https://image-crop-studio.vercel.app/" />
+    <meta property="og:title" content="Free Image Converter, Compressor &amp; Crop Online — Image Crop Studio" />
+    <meta
+      property="og:description"
+      content="Fast, 100% private browser image tool: compress image size in KB, convert 11+ formats (AVIF, WebP, PNG, JPG, HEIC, SVG, ICO, PDF), crop with curved corners, and remove backgrounds with AI."
+    />
+    <meta property="og:image" content="https://image-crop-studio.vercel.app/icons.svg" />
+    <meta property="og:image:alt" content="Image Crop Studio — Free Image Converter, Compressor &amp; Editor" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://image-crop-studio.vercel.app/" />
+    <meta name="twitter:title" content="Free Image Converter, Compressor &amp; Crop Online — Image Crop Studio" />
+    <meta
+      name="twitter:description"
+      content="Fast, 100% private browser image tool: compress image size in KB, convert 11+ formats, crop with curved corners, and remove backgrounds with AI."
+    />
+    <meta name="twitter:image" content="https://image-crop-studio.vercel.app/icons.svg" />
+    <meta name="twitter:creator" content="@gouderhicham" />
+
+    <!-- Google Fonts Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Schema.org JSON-LD Structured Data for Google Rich Snippets -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "@id": "https://image-crop-studio.vercel.app/#webapp",
+            "name": "Image Crop Studio",
+            "url": "https://image-crop-studio.vercel.app/",
+            "applicationCategory": "DesignApplication",
+            "operatingSystem": "All",
+            "browserRequirements": "Requires JavaScript and HTML5 Canvas support",
+            "description": "Free, browser-based image suite for image compression to target KB, universal format conversion (AVIF, WebP, PNG, JPG, HEIC, SVG, ICO, PDF), precision aspect-ratio cropping with border radius, and AI background segmentation with zero server uploads.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "author": {
+              "@type": "Person",
+              "name": "Gouder Hicham",
+              "url": "https://www.linkedin.com/in/gouder-hicham619/"
+            },
+            "featureList": [
+              "Target KB image compression without visual quality degradation",
+              "Universal format conversion (AVIF, WebP, PNG, JPG, JFIF, HEIC, SVG, ICO, BMP, TIFF, PDF)",
+              "Apple HEIC/HEIF camera photo decoding in browser worker",
+              "Aspect-ratio image cropper with independent corner border radius curvature control",
+              "AI-powered background removal and alpha segmentation",
+              "100% client-side privacy with zero server uploads"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://image-crop-studio.vercel.app/#website",
+            "url": "https://image-crop-studio.vercel.app/",
+            "name": "Image Crop Studio",
+            "alternateName": [
+              "Free Image Converter",
+              "Free Image Compressor",
+              "Online Image Cropper",
+              "AI Background Remover",
+              "HEIC to JPG Converter"
+            ],
+            "description": "Free online image editor for format conversion, image compression, aspect ratio cropping, and background removal."
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "@id": "https://image-crop-studio.vercel.app/#navigation",
+            "name": "Image Crop Studio Tools",
+            "hasPart": [
+              {
+                "@type": "WebPage",
+                "name": "Free Image Compressor",
+                "url": "https://image-crop-studio.vercel.app/#compress",
+                "description": "Reduce file weight in KB to exact target sizes without visual quality loss."
+              },
+              {
+                "@type": "WebPage",
+                "name": "Universal Image Converter",
+                "url": "https://image-crop-studio.vercel.app/#convert",
+                "description": "Convert images between AVIF, WebP, PNG, JPG, JFIF, HEIC, SVG, ICO, BMP, TIFF, and PDF."
+              },
+              {
+                "@type": "WebPage",
+                "name": "Image Cropper & Framing",
+                "url": "https://image-crop-studio.vercel.app/#crop",
+                "description": "Crop images with aspect ratios, framing, and rounded corner border radius."
+              },
+              {
+                "@type": "WebPage",
+                "name": "AI Background Remover",
+                "url": "https://image-crop-studio.vercel.app/#remove-bg",
+                "description": "Automatic salient object extraction with transparent background matte."
+              }
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://image-crop-studio.vercel.app/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Is Image Crop Studio completely free to use?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, Image Crop Studio is 100% free with unlimited conversions, compressions, crops, and background removals. No registration, subscriptions, or watermarks required."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Are my images uploaded to any cloud server?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. All processing, compression, format conversion, and AI background segmentation runs 100% locally in your web browser using HTML5 Canvas, Web Workers, and WebAssembly. Your images never leave your computer or phone."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What image formats can I convert and compress?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Image Crop Studio supports all major formats: Apple HEIC/HEIF, AVIF, WebP, PNG, JPEG/JPG, JFIF, SVG, Windows ICO (Favicon), BMP, TIFF, GIF, and PDF document export."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do I compress an image to an exact KB size?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Select the Compress tool, enter your desired target file size in KB (e.g. 100 KB or 50 KB), choose your output format (WebP or JPEG), and click Compress. The browser worker will optimize quality to hit your target file weight."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I convert iPhone HEIC photos to JPG or PNG on mobile?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. When you upload or paste an Apple .heic or .heif photo, Image Crop Studio automatically decodes it in your browser and allows instant conversion to PNG, JPG, WebP, AVIF, or PDF."
+                }
+              }
+            ]
+          },
+          {
+            "@type": "HowTo",
+            "@id": "https://image-crop-studio.vercel.app/#howto-convert",
+            "name": "How to Convert Images Online for Free",
+            "description": "Convert any image format to WebP, PNG, JPG, AVIF, SVG, ICO, or PDF in 3 simple steps.",
+            "step": [
+              {
+                "@type": "HowToStep",
+                "position": 1,
+                "name": "Upload or Paste Image",
+                "text": "Drop your image into the dropzone or tap Paste from Clipboard."
+              },
+              {
+                "@type": "HowToStep",
+                "position": 2,
+                "name": "Select Target Output Format",
+                "text": "Choose your desired target format (e.g. AVIF, WebP, PNG, JPG, ICO, PDF) and customize background fill or scaling."
+              },
+              {
+                "@type": "HowToStep",
+                "position": 3,
+                "name": "Convert & Download",
+                "text": "Click Convert and download your converted file instantly."
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

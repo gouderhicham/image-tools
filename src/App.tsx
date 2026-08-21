@@ -13,10 +13,12 @@ import { CompressionResults } from './components/CompressionResults';
 import { ImageCropper } from './components/ImageCropper';
 import { BackgroundRemover } from './components/BackgroundRemover';
 import { ImageConverter } from './components/ImageConverter';
+import { SeoContent } from './components/SeoContent';
 import { isHeicFile, decodeHeicFile } from './utils/heicDecoder';
+import { getInitialTabFromHash, updateDocumentSeo, type AppTab } from './utils/seo';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<'compress' | 'crop' | 'convert' | 'remove-bg'>('compress');
+  const [activeTab, setActiveTab] = useState<AppTab>(getInitialTabFromHash);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [originalUrl, setOriginalUrl] = useState<string>('');
   const [originalSizeKB, setOriginalSizeKB] = useState<number>(0);
@@ -32,6 +34,22 @@ export function App() {
   const [compressedResult, setCompressedResult] = useState<CompressedResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
+
+  // Dynamic SEO title & meta tag sync
+  useEffect(() => {
+    updateDocumentSeo(activeTab);
+  }, [activeTab]);
+
+  // Listen to browser hash changes (e.g. back/forward navigation or anchor links)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const tabFromHash = getInitialTabFromHash();
+      setActiveTab(tabFromHash);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // Memory management: clean up object URLs
   useEffect(() => {
@@ -255,6 +273,9 @@ export function App() {
             </div>
           )}
         </div>
+
+        {/* Semantic SEO & FAQ Rich Content */}
+        <SeoContent activeTab={activeTab} onSelectTab={setActiveTab} />
       </main>
 
       <Footer />
